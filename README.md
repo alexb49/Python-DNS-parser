@@ -21,4 +21,4 @@ example:
 with a DNS server FQDN = 'machine-1.aws.example.com' and azone file named named 'test.example.com'
 PATH TO THE FILE = '/opt/cmdb/dns/machine-1.aws.example.com/test.example.com'
 CONF_PATH = '/opt/cmdb/dns/*'
-CONF_PATH_GLOB = '/opt/cmdb/dns/'_GLOB
+CONF_PATH_GLOB = '/opt/cmdb/dns/'
