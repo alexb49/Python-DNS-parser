@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
 author: alexis
-email: abezard@guardiananalytics.com || alexisbezard@gmail.com
-project: cmdb
+email: alexisbezard@gmail.com
+project: 
 """
 
 """
