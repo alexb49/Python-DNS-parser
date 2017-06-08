@@ -21,7 +21,6 @@ import json
 import glob
 import sys
 
-import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
@@ -460,7 +459,13 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
   for record in records:
     for name in record:
       
-
+      # SanitizeData
+      name=name.encode("ascii","replace")
+      for entry in record[name]:
+        entry=entry.encode("ascii","replace")
+        if not record[name][entry]:
+          record[name][entry] = None
+      
       # get class ID
       sql_get_class_id = "SELECT id FROM network_dns_record_class WHERE name = %s" % SqlStringOrNull(record[name]['class'])
       get_class_id = QueryCMDB(sql_get_class_id)
