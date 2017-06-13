@@ -17,8 +17,8 @@ CONF_PATH       => Path to all the DNS zone files <br />
 CONF_PATH_GLOB  => Path to the DNS directory containing 1 directory for each DNS server <br />
 OUTPUT_PATH     => Path to the directory where you want the JSON files to be put <br />
 
-example:
-with a DNS server FQDN = 'machine-1.aws.example.com' and azone file named named 'test.example.com'
-PATH TO THE FILE = '/opt/cmdb/dns/machine-1.aws.example.com/test.example.com'
-CONF_PATH = '/opt/cmdb/dns/*'
-CONF_PATH_GLOB = '/opt/cmdb/dns/'
+examples: <br />
+with a DNS server FQDN = 'machine-1.aws.example.com' and azone file named named 'test.example.com' <br />
+PATH TO THE FILE = '/opt/cmdb/dns/machine-1.aws.example.com/test.example.com' <br />
+CONF_PATH = '/opt/cmdb/dns/*' <br />
+CONF_PATH_GLOB = '/opt/cmdb/dns/' <br />
