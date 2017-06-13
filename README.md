@@ -3,8 +3,8 @@ Python script + MySQL schema that allows you to parse DNS configuration files
 
 
 Format for the FQDN:
-hostname.environment.location.domain
-hostname.location.domain
+hostname.environment.location.domain <br />
+hostname.location.domain <br />
 
 i.e.
 machine-1.mv.example.com
