@@ -160,16 +160,16 @@ DROP TABLE IF EXISTS `network_dns_zone_record`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `network_dns_zone_record` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `network_dns_zone_id` int(11) NOT NULL,
-  `name` varchar(45) DEFAULT '86400',
+  `network_dns_zone_id` int(11) NOT NULL COMMENT 'Reference to network_dns_zone.id',
+  `name` varchar(45) DEFAULT NULL,
   `origin` varchar(255) DEFAULT NULL,
   `ttl` varchar(11) DEFAULT NULL,
-  `network_dns_record_type_id` int(11) DEFAULT NULL,
-  `network_dns_record_class_id` int(11) DEFAULT NULL,
-  `rdata` varchar(255) DEFAULT '15M',
+  `network_dns_record_type_id` int(11) DEFAULT NULL COMMENT 'Reference to network_dns_record_type.id',
+  `network_dns_record_class_id` int(11) DEFAULT NULL COMMENT 'Reference to network_dns_record_class.id',
+  `rdata` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `unique_record` (`network_dns_zone_id`,`name`,`origin`,`network_dns_record_type_id`,`network_dns_record_class_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3715 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3716 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -181,9 +181,9 @@ DROP TABLE IF EXISTS `network_dns_zone_record_soa`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `network_dns_zone_record_soa` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `network_dns_zone_id` int(11) NOT NULL,
-  `network_dns_record_class_id` int(11) DEFAULT NULL,
-  `network_dns_record_type_id` int(11) DEFAULT NULL,
+  `network_dns_zone_id` int(11) NOT NULL COMMENT 'Reference to network_dns_zone.id',
+  `network_dns_record_class_id` int(11) DEFAULT NULL COMMENT 'Reference to network_dns_record_class.id',
+  `network_dns_record_type_id` int(11) DEFAULT NULL COMMENT 'Reference to network_dns_record_type.id',
   `ttl` varchar(45) DEFAULT '86400',
   `primary_name_server` varchar(255) DEFAULT NULL,
   `responsible_party` varchar(11) DEFAULT NULL,
@@ -206,12 +206,13 @@ DROP TABLE IF EXISTS `raw_network_dns_configuration`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `raw_network_dns_configuration` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `hostname` varchar(255) NOT NULL DEFAULT '',
-  `zone` varchar(255) NOT NULL DEFAULT '',
+  `hostname` varchar(255) NOT NULL DEFAULT '' COMMENT 'Hostname where the file lives',
+  `zone` varchar(255) NOT NULL DEFAULT '' COMMENT 'Zone name',
   `data_json` longtext NOT NULL,
   `processed` tinyint(1) DEFAULT NULL COMMENT 'Has this data already been processed?',
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `updated` datetime DEFAULT NULL,
+  `in_use` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_zone_per_hostname` (`hostname`,`zone`)
 ) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8;
