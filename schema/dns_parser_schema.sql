@@ -146,6 +146,7 @@ CREATE TABLE `network_dns_zone` (
   `include_list` varchar(255) DEFAULT NULL COMMENT 'Refers to $INCLUDE in DNS file',
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
+  `in_use` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_domain_per_location` (`machine_id`,`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8;
@@ -212,7 +213,6 @@ CREATE TABLE `raw_network_dns_configuration` (
   `processed` tinyint(1) DEFAULT NULL COMMENT 'Has this data already been processed?',
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `updated` datetime DEFAULT NULL,
-  `in_use` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_zone_per_hostname` (`hostname`,`zone`)
 ) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8;
