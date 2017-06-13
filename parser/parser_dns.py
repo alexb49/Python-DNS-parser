@@ -765,7 +765,7 @@ def Main(args=None):
   if not JSON_OUTPUT:
 
     # Now let's import the data from the RAW table
-    sql = "SELECT * FROM raw_network_dns_configuration WHERE processed = 0 AND in_use = 1"
+    sql = "SELECT * FROM raw_network_dns_configuration WHERE processed = 0"
     items = QueryCMDB(sql)
     
     # Process each item
