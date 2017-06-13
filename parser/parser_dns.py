@@ -400,6 +400,7 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
   """
 
   # variables
+  valid_record_list = []
   include_list = []
   ttl = ''
   records = []
@@ -527,6 +528,9 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
 
         if zone_record:
           zone_record = zone_record[0]
+          
+          # add it to the valid record list
+          valid_record_list.append(zone_record['id'])
 
           sql_update_zone_record = """UPDATE network_dns_zone_record
                                    SET ttl = %s, rdata = %s
@@ -538,9 +542,43 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
                                    (network_dns_zone_id, name, origin, ttl, network_dns_record_type_id, network_dns_record_class_id, rdata) 
                                    VALUES (%s, %s, %s, %s, %s, %s, %s)""" % (SqlStringOrNull(dns_zone_id), SqlStringOrNull(name), SqlStringOrNull(record[name]['origin']), SqlStringOrNull(record[name]['ttl']), SqlStringOrNull(type_id), SqlStringOrNull(class_id), SqlStringOrNull(record[name]['rdata']))
           QueryCMDB(sql_insert_zone_record)
+          
+          # add it to the valid record list
+          valid_record_list.append(insert_zone_record)
 
+  # Clean the network_dns_zone_record table up
+  if dns_zone_id:
+    sql_cleanup = "SELECT id FROM network_dns_zone_record WHERE network_dns_zone_id = %s" % SqlStringOrNull(dns_zone_id)
+    ClearTable(valid_record_list,sql_cleanup,'network_dns_zone_record')
+  else:
+    Log('No DNS Zone ID found - Can\'t clean up.', logging.WARN)
+    
+          
+def ClearTable(valid_id_list,sql_cleanup,table):
+  """ Clear a specified table in CMDB based on an id list
 
+  Args:
+    valid_id_list
+    sql_cleanup
+    table
 
+  Returns: None
+  """
+  
+  # get all the ids living in the table
+  all_ids = QueryCMDB(sql_cleanup)
+
+  # explore all the ids
+  for item in all_ids:
+    if item['id'] not in valid_id_list:
+
+      Log('DELETE / table: %s - id: %s' % (table, item['id']))
+
+      # deletion query
+      sql_deletion = "DELETE FROM %s WHERE id = %s" % (table, SqlStringOrNull(item['id']))
+      QueryCMDB(sql_deletion)
+
+      
 def Usage(error=None, perform_sys_exit=True):
   """ Basic usage """
 
@@ -727,7 +765,7 @@ def Main(args=None):
   if not JSON_OUTPUT:
 
     # Now let's import the data from the RAW table
-    sql = "SELECT * FROM raw_network_dns_configuration WHERE processed = 0"
+    sql = "SELECT * FROM raw_network_dns_configuration WHERE processed = 0 AND in_use = 1"
     items = QueryCMDB(sql)
     
     # Process each item
