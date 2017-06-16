@@ -559,22 +559,28 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
   # if we already have an entry, update
   if zone_data:
     zone_data = zone_data[0]
-    # get dns_zone_id
-    dns_zone_id = zone_data['id']
 
-    if (zone_data['ttl'] != ttl) or (zone_data['include_list'] != include_list):
-      sql_zone_update = "UPDATE network_dns_zone SET "
+    # if zone tagged as not in used, then skip it
+    if zone_data['in_use'] == 0:
+      Log('Skipping import for - %s. This zone is apparently not in use anymore.' % zone, logging.WARN)
+      return None
+    else:
+      # get dns_zone_id
+      dns_zone_id = zone_data['id']
 
-      if ttl:
-        sql_zone_update += "ttl = %s, " % (SqlStringOrNull(ttl))
+      if (zone_data['ttl'] != ttl) or (zone_data['include_list'] != include_list):
+        sql_zone_update = "UPDATE network_dns_zone SET "
 
-      if include_list:
-        sql_zone_update += "include_list = %s, " % (SqlStringOrNull(include_list))
+        if ttl:
+          sql_zone_update += "ttl = %s, " % (SqlStringOrNull(ttl))
+
+        if include_list:
+          sql_zone_update += "include_list = %s, " % (SqlStringOrNull(include_list))
 
 
-      sql_zone_update += " updated = NOW() WHERE id = %s" % (SqlStringOrNull(zone_data['id']))
-      QueryCMDB(sql_zone_update)
-
+        sql_zone_update += " updated = NOW() WHERE id = %s" % (SqlStringOrNull(zone_data['id']))
+        QueryCMDB(sql_zone_update)
+        
 
   # else insert
   else:
