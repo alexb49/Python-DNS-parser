@@ -166,10 +166,30 @@ def ProcessData(machine_name,zone,results):
 
     # reset variable
     formatted_line = ''
+    line = []
+    temp_entry = ''
 
     item = item.strip()
-    line = item.split()
+    # line = item.split()
 
+    # By default the double quote check
+    double_quotes_check = False
+
+    # we need to format the splitted to handle the double quotes
+    for i in item.split():
+      # if starts with quote
+      if i.startswith('"'):
+        double_quotes_check = True
+      if double_quotes_check:
+        temp_entry = " ".join([temp_entry, i])
+        # if ends with quote
+        if i.endswith('"'):
+          double_quotes_check = False
+          line.append(temp_entry.strip())
+          # reset our temp_entry variable
+          temp_entry = ''
+      else:
+        line.append(i)
     # if the line is not empty
     if item and len(line) >= 2:
       
@@ -333,6 +353,18 @@ def ProcessLine(line,last_origin,last_class,global_ttl):
 
       # if length = 5 we are not missing anything
       elif len(line) == 5:
+        record_dict[final_name]['ttl'] = line[1]
+        record_dict[final_name]['class'] = line[2]
+
+    # handle the MX records
+    elif final_type == 'MX':
+      record_dict[final_name] = {}
+      record_dict[final_name]['origin'] = last_origin
+      record_dict[final_name]['type'] = final_type
+      # if length of line == 6
+      if len(line) == 6:
+        # rdata receives join of the 2 last columns
+        record_dict[final_name]['rdata'] = " ".join([line[-2], line[-1]])
         record_dict[final_name]['ttl'] = line[1]
         record_dict[final_name]['class'] = line[2]
     
