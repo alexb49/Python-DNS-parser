@@ -331,7 +331,7 @@ def ProcessLine(line,last_origin,last_class,global_ttl):
         record_dict[final_name]['minimum'] = line[11]
 
     # if not SOA, we support A / CNAME / NS record
-    elif final_type == 'A' or final_type == 'CNAME' or final_type == 'NS':
+    elif final_type == 'A' or final_type == 'CNAME' or final_type == 'NS' or final_type == 'TXT':
       record_dict[final_name] = {}
       record_dict[final_name]['origin'] = last_origin
       record_dict[final_name]['type'] = final_type
@@ -343,7 +343,7 @@ def ProcessLine(line,last_origin,last_class,global_ttl):
         record_dict[final_name]['class'] = last_class
 
       # if length = 4 we know we are missing the TTL or the class
-      if len(line) == 4:
+      elif len(line) == 4:
         if final_class:
           record_dict[final_name]['ttl'] = global_ttl
           record_dict[final_name]['class'] = line[1]
@@ -356,6 +356,10 @@ def ProcessLine(line,last_origin,last_class,global_ttl):
         record_dict[final_name]['ttl'] = line[1]
         record_dict[final_name]['class'] = line[2]
 
+      else:
+        Log('Skipping - \"%s\". LENGTH NOT SUPPORTED. LENGTH = %s' % (line,len(line)), logging.WARN)
+        return None
+        
     # handle the MX records
     elif final_type == 'MX':
       record_dict[final_name] = {}
