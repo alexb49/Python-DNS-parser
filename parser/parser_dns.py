@@ -429,7 +429,7 @@ def ProcessLine(line,last_origin,last_class,global_ttl):
         record_dict[final_name]['type'] = final_type
         record_dict[final_name]['ttl'] = line[1]
         record_dict[final_name]['class'] = final_class
-        record_dict[final_name]['rdata'] = " ".join([line[-4], [line[-3], [line[-2], line[-1]])
+        record_dict[final_name]['rdata'] = line[-4] + " " + line[-3] + " " + line[-2] + " " + line[-1]
       else:
         Log('Skipping - \"%s\". SRV RECORD NOT PROPERLY FORMATTED. NUMBER OF ENTRIES IN THE LINE = %s' % (line,len(line)), logging.WARN)
         return None   
