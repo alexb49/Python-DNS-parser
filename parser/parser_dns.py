@@ -9,7 +9,7 @@ project:
 Parses DNS configuration files and put the data into a Database or in a JSON file.
 
 TODO:
-  - 
+  - Improve how I handle SRV records.
 """
 
 import datetime
@@ -406,7 +406,7 @@ def ProcessLine(line,last_origin,last_class,global_ttl):
       elif len(line) == 4:
         if final_class:
           record_dict[final_name]['ttl'] = global_ttl
-          record_dict[final_name]['class'] = line[1]
+          record_dict[final_name]['class'] = final_class
         else:
           record_dict[final_name]['ttl'] = line[1]
           record_dict[final_name]['class'] = last_class
@@ -414,23 +414,60 @@ def ProcessLine(line,last_origin,last_class,global_ttl):
       # if length = 5 we are not missing anything
       elif len(line) == 5:
         record_dict[final_name]['ttl'] = line[1]
-        record_dict[final_name]['class'] = line[2]
+        record_dict[final_name]['class'] = final_class
 
       else:
-        Log('Skipping - \"%s\". LENGTH NOT SUPPORTED. LENGTH = %s' % (line,len(line)), logging.WARN)
+        Log('Skipping - \"%s\". NOT PROPERLY FORMATTED. NUMBER OF ENTRIES IN THE LINE = %s' % (line,len(line)), logging.WARN)
         return None
-        
+      
+    # handle SRV records
+    elif final_type == 'SRV':
+      # if we have a properly formatted SRV record
+      if len(line) == 8:
+        record_dict[final_name] = {}
+        record_dict[final_name]['origin'] = last_origin
+        record_dict[final_name]['type'] = final_type
+        record_dict[final_name]['ttl'] = line[1]
+        record_dict[final_name]['class'] = final_class
+        record_dict[final_name]['rdata'] = " ".join([line[-4], [line[-3], [line[-2], line[-1]])
+      else:
+        Log('Skipping - \"%s\". SRV RECORD NOT PROPERLY FORMATTED. NUMBER OF ENTRIES IN THE LINE = %s' % (line,len(line)), logging.WARN)
+        return None   
+                                                                
     # handle the MX records
     elif final_type == 'MX':
       record_dict[final_name] = {}
       record_dict[final_name]['origin'] = last_origin
       record_dict[final_name]['type'] = final_type
+      
       # if length of line == 6
       if len(line) == 6:
         # rdata receives join of the 2 last columns
         record_dict[final_name]['rdata'] = " ".join([line[-2], line[-1]])
         record_dict[final_name]['ttl'] = line[1]
-        record_dict[final_name]['class'] = line[2]
+        record_dict[final_name]['class'] = final_class
+
+      # if len is not 6, we need to figure out if we are missing the ttl, the class or the priority
+      elif len(line) == 5:
+        # if we are missing the class, use the one from the previous line
+        if not final_class:
+          record_dict[final_name]['class'] = last_class
+          record_dict[final_name]['rdata'] = " ".join([line[-2], line[-1]])
+          record_dict[final_name]['ttl'] = line[1]
+
+        # else are we missing the ttl or the priority
+        else:
+          # let's get the position of the final_type
+          # if position == 2 then we're missing the ttl
+          if line.index(final_type) == 2:
+            record_dict[final_name]['class'] = final_class
+            record_dict[final_name]['ttl'] = global_ttl
+            record_dict[final_name]['rdata'] = " ".join([line[-2], line[-1]])
+            
+          # else we're missing the priority and don't handle it
+          else:
+            Log('Skipping - \"%s\". THIS MX RECORD DOES NOT HAVE A PRIORITY. NOT SUPPORTED.' % line, logging.WARN)
+            return None
 
       else:
         Log('Skipping - \"%s\". THIS MX RECORD FORMAT IS NOT SUPPORTED YET.' % line, logging.WARN)
