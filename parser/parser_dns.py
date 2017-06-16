@@ -33,7 +33,7 @@ CONF_PATH = '/opt/cmdb/dns/*'
 CONF_PATH_GLOB = '/opt/cmdb/dns'
 
 # JSON Path
-OUTPUT_PATH = "../dns-json-output/"
+OUTPUT_PATH = "../data/dns-json-output/"
 
 # Do we want a JSON output?
 JSON_OUTPUT = False
