@@ -563,7 +563,7 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
     # if zone tagged as not in used, then skip it
     if zone_data['in_use'] == 0:
       Log('Skipping import for - %s. This zone is apparently not in use anymore.' % zone, logging.WARN)
-      return None
+      return False
     else:
       # get dns_zone_id
       dns_zone_id = zone_data['id']
@@ -695,6 +695,8 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
     ClearTable(valid_record_list,sql_cleanup,'network_dns_zone_record')
   else:
     Log('No DNS Zone ID found - Can\'t clean up.', logging.WARN)
+    
+  return True
     
           
 def ClearTable(valid_id_list,sql_cleanup,table):
@@ -929,13 +931,16 @@ def Main(args=None):
         # log
         Log('IMPORT: host: %s - zone: %s' % (hostname, zone))
 
-        ImportRawDNSConfiguration(machine_id,zone,data)
+        updated = ImportRawDNSConfiguration(machine_id,zone,data)
 
-        # done processing the entry in the raw table, let's turn processed to 1
-        sql_processed = """UPDATE raw_network_dns_configuration
-                           SET processed = 1
-                           WHERE id = %s""" % SqlStringOrNull(item['id'])
-        QueryCMDB(sql_processed)
+        # if the zone has been updated and not skipped
+        if updated:
+
+          # done processing the entry in the raw table, let's turn processed to 1
+          sql_processed = """UPDATE raw_network_dns_configuration
+                             SET processed = 1
+                             WHERE id = %s""" % SqlStringOrNull(item['id'])
+          QueryCMDB(sql_processed)
 
       else:
         Log('Skipping - %s could not be found in the machine table.' % hostname, logging.WARN)
