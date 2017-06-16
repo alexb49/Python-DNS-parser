@@ -207,7 +207,7 @@ def ProcessData(machine_name,zone,results):
 
       # if line has a $ but is not INCLUDE/TTL/ORIGIN
       elif '$' in line[0]:
-        Log('Skipping - \"%s\" \'. FORMAT NOT SUPPORTED YET.' % item, logging.WARN)
+        Log('Skipping - \"%s\" \'. FORMAT NOT SUPPORTED.' % item, logging.WARN)
         continue
 
       # otherwise process line
