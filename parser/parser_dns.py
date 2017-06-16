@@ -371,7 +371,11 @@ def ProcessLine(line,last_origin,last_class,global_ttl):
         record_dict[final_name]['rdata'] = " ".join([line[-2], line[-1]])
         record_dict[final_name]['ttl'] = line[1]
         record_dict[final_name]['class'] = line[2]
-    
+
+      else:
+        Log('Skipping - \"%s\". THIS MX RECORD FORMAT IS NOT SUPPORTED YET.' % line, logging.WARN)
+        return None
+        
     else:
       Log('Skipping - \"%s\". RECORD TYPE NOT SUPPORTED YET.' % line, logging.WARN)
       return None
