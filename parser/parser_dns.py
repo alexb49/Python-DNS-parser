@@ -89,9 +89,69 @@ def ProcessFile(filepath,machine_name):
         # Skip comments
         if line.startswith(';'):
           continue
-        # Skip comments at the end of the line
+        # separate the comments at the end of the line and the semicolon within quotes
         if ';' in line:
-          line = line.split(';')[0]
+          # if we have double quotes in before the first semicolon 
+          if '"' in line.split(';')[0]:
+
+            # variables
+            temp_line = line.split(';')
+            final_line = ''
+            semicolon_in_quote_check = False
+
+            # for each part in the splitted line
+            for i in temp_line:
+              # if we have at least one double quote in the part
+              if '"' in i:
+                # if modulus of the number of doubles quotes equal 0
+                if i.count('"') % 2 == 0:
+                  # if we had an odd number of double quote in the previous part
+                  if semicolon_in_quote_check:
+                    # and if the final line is currently empty
+                    if not final_line:
+                      # how can you have one single double quote in the previous part and still have an emtpy line
+                      Log('How did you get there - %s' % line, logging.WARN)
+                    else:
+                      # add current to final line
+                      final_line = ";".join([final_line, i])
+                  # if we didn't have an odd number of double quote in the previous part
+                  else:
+                    # then turn off the semicolon in quote check
+                    semicolon_in_quote_check = False
+                    # add the data to the final line and break, we're done here
+                    if not final_line:
+                      final_line = i
+                      break
+                    else:
+                      final_line = ";".join([final_line, i])
+                      break
+                # if we have an odd number of double quote
+                else:
+                  # if we had an odd number of double quote in the previous part
+                  if semicolon_in_quote_check:
+                    # then we re done, add the data to the final line and break
+                    if not final_line:
+                      final_line = i
+                      break
+                    else:
+                      final_line = ";".join([final_line, i])
+                      break
+                  # if we didn't have an odd number of double quote in the previous part
+                  else:
+                    semicolon_in_quote_check = True
+                    if not final_line:
+                      final_line = i
+                    else:
+                      final_line = ";".join([final_line, i])
+              # if we don't have a quote in that part
+              else:
+                if not final_line:
+                  final_line = i
+                else:
+                  final_line = ";".join([final_line, i])
+          # if we don't have a quote in the line
+          else:
+            line = line.split(';')[0]
         
         # deal with an empty/@ resource record name
         if re.match(r'[ \t]', line):
