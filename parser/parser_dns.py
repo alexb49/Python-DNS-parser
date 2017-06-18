@@ -156,9 +156,12 @@ def ProcessFile(filepath,machine_name):
         # deal with an empty/@ resource record name
         if re.match(r'[ \t]', line):
           line = resource_record_name + ' ' + line[1:]
+        # if line starts with @
         elif line.startswith('@'):
           line = line.replace('@',last_origin)
+        # if line starts with $
         elif line.startswith('$'):
+          # if it's an ORIGIN, store it
           if line.startswith('$ORIGIN'):
             resource_record_name = line.split(' ')[1]
             last_origin = line.split(' ')[1]
@@ -237,12 +240,13 @@ def ProcessData(machine_name,zone,results):
 
     # we need to format the splitted to handle the double quotes
     for i in item.split():
-      # if starts with quote
+      # if the string starts with quote
       if i.startswith('"'):
         double_quotes_check = True
+      # if we have a quote opened
       if double_quotes_check:
         temp_entry = " ".join([temp_entry, i])
-        # if ends with quote
+        # if the string ends with quote
         if i.endswith('"'):
           double_quotes_check = False
           line.append(temp_entry.strip())
