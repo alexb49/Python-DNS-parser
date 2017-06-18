@@ -153,6 +153,18 @@ CREATE TABLE `network_dns_zone` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `network_dns_zone_origin`
+--
+
+CREATE TABLE `network_dns_zone_origin` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `network_dns_zone_id` int(11) NOT NULL COMMENT 'Reference to network_dns_zone.id',
+  `name` varchar(255) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_origin_per_zone` (`name`,`network_dns_zone_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
 -- Table structure for table `network_dns_zone_record`
 --
 
@@ -162,15 +174,15 @@ DROP TABLE IF EXISTS `network_dns_zone_record`;
 CREATE TABLE `network_dns_zone_record` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `network_dns_zone_id` int(11) NOT NULL COMMENT 'Reference to network_dns_zone.id',
-  `name` varchar(45) DEFAULT NULL,
-  `origin` varchar(255) DEFAULT NULL,
+  `name` varchar(45) NOT NULL DEFAULT '',
+  `network_dns_zone_origin_id` int(11) DEFAULT NULL COMMENT 'Reference to network_dns_zone_origin.id',
   `ttl` varchar(11) DEFAULT NULL,
   `network_dns_record_type_id` int(11) DEFAULT NULL COMMENT 'Reference to network_dns_record_type.id',
-  `network_dns_record_class_id` int(11) DEFAULT NULL COMMENT 'Reference to network_dns_record_class.id',
-  `rdata` varchar(255) DEFAULT NULL,
+  `network_dns_record_class_id` int(11) NOT NULL COMMENT 'Reference to network_dns_record_class.id',
+  `rdata` text NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `unique_record` (`network_dns_zone_id`,`name`,`origin`,`network_dns_record_type_id`,`network_dns_record_class_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3716 DEFAULT CHARSET=utf8;
+  UNIQUE KEY `unique_record` (`network_dns_zone_id`,`name`,`network_dns_zone_origin_id`,`network_dns_record_type_id`,`network_dns_record_class_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -183,6 +195,7 @@ DROP TABLE IF EXISTS `network_dns_zone_record_soa`;
 CREATE TABLE `network_dns_zone_record_soa` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `network_dns_zone_id` int(11) NOT NULL COMMENT 'Reference to network_dns_zone.id',
+  `network_dns_zone_origin_id` int(11) DEFAULT NULL COMMENT 'Reference to network_dns_origin.id',
   `network_dns_record_class_id` int(11) DEFAULT NULL COMMENT 'Reference to network_dns_record_class.id',
   `network_dns_record_type_id` int(11) DEFAULT NULL COMMENT 'Reference to network_dns_record_type.id',
   `ttl` varchar(45) DEFAULT '86400',
@@ -195,7 +208,7 @@ CREATE TABLE `network_dns_zone_record_soa` (
   `minimum` varchar(45) DEFAULT '3h',
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_conf_per_domain` (`network_dns_zone_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
