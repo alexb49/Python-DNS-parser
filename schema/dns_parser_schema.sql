@@ -180,6 +180,8 @@ CREATE TABLE `network_dns_zone_record` (
   `network_dns_record_type_id` int(11) DEFAULT NULL COMMENT 'Reference to network_dns_record_type.id',
   `network_dns_record_class_id` int(11) NOT NULL COMMENT 'Reference to network_dns_record_class.id',
   `rdata` text NOT NULL,
+  `created` datetime DEFAULT NULL,
+  `updated` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_record` (`network_dns_zone_id`,`name`,`network_dns_zone_origin_id`,`network_dns_record_type_id`,`network_dns_record_class_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -206,6 +208,8 @@ CREATE TABLE `network_dns_zone_record_soa` (
   `retry` varchar(45) DEFAULT '15M',
   `expire` varchar(45) DEFAULT '1w',
   `minimum` varchar(45) DEFAULT '3h',
+  `created` datetime DEFAULT NULL,
+  `updated` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_conf_per_domain` (`network_dns_zone_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8;
