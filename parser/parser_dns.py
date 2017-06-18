@@ -371,14 +371,16 @@ def ProcessLine(line,last_origin,last_class,global_ttl):
 
   # make sure we have a valid type
   if final_type:
-    # name
+    # get name
     final_name = line[0]
 
+    # if SOA record
     if final_type == 'SOA':
       if len(line) == 13:
 
         # dict
         record_dict[final_name] = {}
+        record_dict[final_name]['origin'] = line[0]
         record_dict[final_name]['ttl'] = line[1]
         record_dict[final_name]['class'] = line[2]
         record_dict[final_name]['type'] = line[3]
@@ -482,7 +484,7 @@ def ProcessLine(line,last_origin,last_class,global_ttl):
     return None
 
   if record_dict:
-    if (len(record_dict[final_name]) == 5) or (len(record_dict[final_name]) == 10 and final_type == 'SOA'):
+    if (len(record_dict[final_name]) == 5) or (len(record_dict[final_name]) == 11 and final_type == 'SOA'):
       return record_dict
     else:
       Log('Skipping - \"%s\". PROBLEM WHILE PARSING THIS LINE.' % line, logging.WARN)
@@ -523,6 +525,7 @@ def CheckHostname(fqdn):
     return machine_id
   else:
     return None
+
 
 
 def ImportRawDNSConfiguration(machine_id,zone,data):
@@ -580,7 +583,7 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
 
         sql_zone_update += " updated = NOW() WHERE id = %s" % (SqlStringOrNull(zone_data['id']))
         QueryCMDB(sql_zone_update)
-        
+
 
   # else insert
   else:
@@ -597,19 +600,22 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
 
     # get the dns_zone_id
     dns_zone_id = QueryCMDB(sql_zone_insert)
-
-
+  
+  
   # time to explore the records
   for record in records:
     for name in record:
       
       # SanitizeData
-      name=name.encode("ascii","replace")
+      name = name.encode("ascii","replace")
       for entry in record[name]:
-        entry=entry.encode("ascii","replace")
+        entry = entry.encode("ascii","replace")
         if not record[name][entry]:
           record[name][entry] = None
-      
+
+      # grab the origin ID
+      origin_id = HandleOriginID(dns_zone_id,record[name]['origin'])
+          
       # get class ID
       sql_get_class_id = "SELECT id FROM network_dns_record_class WHERE name = %s" % SqlStringOrNull(record[name]['class'])
       get_class_id = QueryCMDB(sql_get_class_id)
@@ -631,7 +637,6 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
         continue
 
 
-
       # if SOA record
       if record[name]['type'] == 'SOA':
         zone_soa = ''
@@ -645,18 +650,20 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
           zone_soa = zone_soa[0]
           
           sql_update_zone_soa = """UPDATE network_dns_zone_record_soa
-                                   SET network_dns_record_class_id = %s, network_dns_record_type_id = %s, ttl = %s, primary_name_server = %s, responsible_party = %s, serial = %s, refresh = %s, retry = %s, expire = %s, minimum = %s
-                                   WHERE id = %s""" % (SqlStringOrNull(class_id), SqlStringOrNull(type_id), SqlStringOrNull(record[name]['ttl']), SqlStringOrNull(record[name]['primary_name_server']), SqlStringOrNull(record[name]['responsible_party']), SqlStringOrNull(record[name]['serial']), SqlStringOrNull(record[name]['refresh']), SqlStringOrNull(record[name]['retry']), SqlStringOrNull(record[name]['expire']), SqlStringOrNull(record[name]['minimum']), SqlStringOrNull(zone_soa['id']))
+                                   SET network_dns_zone_origin_id = %s, network_dns_record_class_id = %s, network_dns_record_type_id = %s, ttl = %s, primary_name_server = %s, responsible_party = %s, serial = %s, refresh = %s, retry = %s, expire = %s, minimum = %s, updated = NOW()
+                                   WHERE id = %s""" % (SqlStringOrNull(origin_id), SqlStringOrNull(class_id), SqlStringOrNull(type_id), SqlStringOrNull(record[name]['ttl']), SqlStringOrNull(record[name]['primary_name_server']), SqlStringOrNull(record[name]['responsible_party']), SqlStringOrNull(record[name]['serial']), SqlStringOrNull(record[name]['refresh']), SqlStringOrNull(record[name]['retry']), SqlStringOrNull(record[name]['expire']), SqlStringOrNull(record[name]['minimum']), SqlStringOrNull(zone_soa['id']))
           QueryCMDB(sql_update_zone_soa)
 
         else:
           sql_insert_zone_soa = """INSERT INTO network_dns_zone_record_soa
-                                   (network_dns_record_class_id, network_dns_record_type_id, network_dns_zone_id, ttl, primary_name_server, responsible_party, serial, refresh, retry, expire, minimum) 
-                                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""" % (SqlStringOrNull(class_id), SqlStringOrNull(type_id), SqlStringOrNull(dns_zone_id), SqlStringOrNull(record[name]['ttl']), SqlStringOrNull(record[name]['primary_name_server']), SqlStringOrNull(record[name]['responsible_party']), SqlStringOrNull(record[name]['serial']), SqlStringOrNull(record[name]['refresh']), SqlStringOrNull(record[name]['retry']), SqlStringOrNull(record[name]['expire']), SqlStringOrNull(record[name]['minimum']))
+                                   (network_dns_record_class_id, network_dns_zone_origin_id, network_dns_record_type_id, network_dns_zone_id, ttl, primary_name_server, responsible_party, serial, refresh, retry, expire, minimum, created) 
+                                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())""" % (SqlStringOrNull(class_id), SqlStringOrNull(origin_id), SqlStringOrNull(type_id), SqlStringOrNull(dns_zone_id), SqlStringOrNull(record[name]['ttl']), SqlStringOrNull(record[name]['primary_name_server']), SqlStringOrNull(record[name]['responsible_party']), SqlStringOrNull(record[name]['serial']), SqlStringOrNull(record[name]['refresh']), SqlStringOrNull(record[name]['retry']), SqlStringOrNull(record[name]['expire']), SqlStringOrNull(record[name]['minimum']))
           QueryCMDB(sql_insert_zone_soa)
  
       # if not a SOA record, insert it in the regular record table
       else:
+
+        # instanciate variables
         zone_record = ''
 
         # check if we already have this record
@@ -666,26 +673,27 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
                              AND network_dns_record_class_id = %s
                              AND network_dns_record_type_id = %s
                              AND name = %s 
-                             AND origin = %s """ % (SqlStringOrNull(dns_zone_id), SqlStringOrNull(class_id), SqlStringOrNull(type_id), SqlStringOrNull(name), SqlStringOrNull(record[name]['origin']))
+                             AND network_dns_zone_origin_id = %s """ % (SqlStringOrNull(dns_zone_id), SqlStringOrNull(class_id), SqlStringOrNull(type_id), SqlStringOrNull(name), SqlStringOrNull(origin_id))
         zone_record = QueryCMDB(sql_zone_record)
 
+        # if we found an entry for the select
         if zone_record:
           zone_record = zone_record[0]
-          
+
           # add it to the valid record list
           valid_record_list.append(zone_record['id'])
 
           sql_update_zone_record = """UPDATE network_dns_zone_record
-                                   SET ttl = %s, rdata = %s
-                                   WHERE id = %s""" % (SqlStringOrNull(record[name]['ttl']), SqlStringOrNull(record[name]['rdata']), SqlStringOrNull(zone_record['id']))
+                                   SET ttl = %s, network_dns_zone_origin_id = %s, rdata = %s, updated = NOW()
+                                   WHERE id = %s""" % (SqlStringOrNull(record[name]['ttl']), SqlStringOrNull(origin_id), SqlStringOrNull(record[name]['rdata']), SqlStringOrNull(zone_record['id']))
           QueryCMDB(sql_update_zone_record)
 
         else:
           sql_insert_zone_record = """INSERT INTO network_dns_zone_record
-                                   (network_dns_zone_id, name, origin, ttl, network_dns_record_type_id, network_dns_record_class_id, rdata) 
-                                   VALUES (%s, %s, %s, %s, %s, %s, %s)""" % (SqlStringOrNull(dns_zone_id), SqlStringOrNull(name), SqlStringOrNull(record[name]['origin']), SqlStringOrNull(record[name]['ttl']), SqlStringOrNull(type_id), SqlStringOrNull(class_id), SqlStringOrNull(record[name]['rdata']))
-          QueryCMDB(sql_insert_zone_record)
-          
+                                   (network_dns_zone_id, name, network_dns_zone_origin_id, ttl, network_dns_record_type_id, network_dns_record_class_id, rdata, created) 
+                                   VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())""" % (SqlStringOrNull(dns_zone_id), SqlStringOrNull(name), SqlStringOrNull(origin_id), SqlStringOrNull(record[name]['ttl']), SqlStringOrNull(type_id), SqlStringOrNull(class_id), SqlStringOrNull(record[name]['rdata']))
+          insert_zone_record = QueryCMDB(sql_insert_zone_record)
+
           # add it to the valid record list
           valid_record_list.append(insert_zone_record)
 
@@ -695,8 +703,36 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
     ClearTable(valid_record_list,sql_cleanup,'network_dns_zone_record')
   else:
     Log('No DNS Zone ID found - Can\'t clean up.', logging.WARN)
-    
+
   return True
+
+
+def HandleOriginID(zone_id,origin):
+  """ Provide the zone id and the origin name and returns the origin id
+
+  Args:
+    zone id
+    origin name
+    
+
+  Returns: origin ID
+  """
+
+  # check if the entry already exists
+  sql_check_origin = "SELECT id FROM network_dns_zone_origin WHERE network_dns_zone_id = %s AND name = %s" % (SqlStringOrNull(zone_id),SqlStringOrNull(origin))
+  check_origin = QueryCMDB(sql_check_origin)
+
+  # if the entry already exists
+  if check_origin:
+    check_origin = check_origin[0]
+    return check_origin['id']
+
+  else:
+    sql_insert_origin = """INSERT INTO network_dns_zone_origin
+                         (network_dns_zone_id, name)
+                         VALUES (%s, %s)""" % (SqlStringOrNull(zone_id), SqlStringOrNull(origin))
+    origin_id = QueryCMDB(sql_insert_origin)
+    return origin_id
     
           
 def ClearTable(valid_id_list,sql_cleanup,table):
