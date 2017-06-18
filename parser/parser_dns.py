@@ -606,6 +606,9 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
   for record in records:
     for name in record:
       
+      # reset origin_id
+      origin_id = ''
+      
       # SanitizeData
       name = name.encode("ascii","replace")
       for entry in record[name]:
@@ -614,7 +617,8 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
           record[name][entry] = None
 
       # grab the origin ID
-      origin_id = HandleOriginID(dns_zone_id,record[name]['origin'])
+      if record[name]['origin']:
+        origin_id = HandleOriginID(dns_zone_id,record[name]['origin'])
           
       # get class ID
       sql_get_class_id = "SELECT id FROM network_dns_record_class WHERE name = %s" % SqlStringOrNull(record[name]['class'])
