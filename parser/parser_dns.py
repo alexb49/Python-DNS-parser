@@ -607,7 +607,7 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
     for name in record:
       
       # reset origin_id
-      origin_id = ''
+      origin_id = None
       
       # SanitizeData
       name = name.encode("ascii","replace")
