@@ -183,7 +183,7 @@ CREATE TABLE `network_dns_zone_record` (
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_record` (`network_dns_zone_id`,`name`,`network_dns_zone_origin_id`,`network_dns_record_type_id`,`network_dns_record_class_id`)
+  KEY `unique_record` (`network_dns_zone_id`,`name`,`network_dns_zone_origin_id`,`network_dns_record_type_id`,`rdata`(255))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
