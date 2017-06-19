@@ -360,12 +360,14 @@ def ProcessData(machine_name,zone,results):
           generate_line.append(generate_type)
           generate_line.append(generate_rhs.replace('$', rhs_iterator_value))
 
+          # process the line
           formatted_line = ProcessLine(generate_line,current_origin,previous_class,zone_dict[zone]['$TTL'])
           
           # if we got a valid return
           if formatted_line:
             record_list.append(formatted_line)
 
+            # Get the value of the last class
             for (name, record) in formatted_line.items():
               for (entry, value) in record.items():
                 if entry == 'class':
@@ -384,6 +386,7 @@ def ProcessData(machine_name,zone,results):
         if formatted_line:
           record_list.append(formatted_line)
 
+          # Get the value of the last class
           for (name, record) in formatted_line.items():
             for (entry, value) in record.items():
               if entry == 'class':
