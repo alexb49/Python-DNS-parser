@@ -202,7 +202,7 @@ CREATE TABLE `network_dns_zone_record_soa` (
   `network_dns_record_type_id` int(11) DEFAULT NULL COMMENT 'Reference to network_dns_record_type.id',
   `ttl` varchar(45) DEFAULT '86400',
   `primary_name_server` varchar(255) DEFAULT NULL,
-  `responsible_party` varchar(11) DEFAULT NULL,
+  `responsible_party` varchar(255) DEFAULT NULL,
   `serial` int(11) DEFAULT NULL,
   `refresh` varchar(45) DEFAULT '3H',
   `retry` varchar(45) DEFAULT '15M',
