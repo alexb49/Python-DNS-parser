@@ -788,8 +788,9 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
                              WHERE network_dns_zone_id = %s
                              AND network_dns_record_class_id = %s
                              AND network_dns_record_type_id = %s
-                             AND name = %s 
-                             AND network_dns_zone_origin_id = %s """ % (SqlStringOrNull(dns_zone_id), SqlStringOrNull(class_id), SqlStringOrNull(type_id), SqlStringOrNull(name), SqlStringOrNull(origin_id))
+                             AND name = %s
+                             AND rdata = %s 
+                             AND network_dns_zone_origin_id = %s """ % (SqlStringOrNull(dns_zone_id), SqlStringOrNull(class_id), SqlStringOrNull(type_id), SqlStringOrNull(name), SqlStringOrNull(record[name]['rdata']),SqlStringOrNull(origin_id))
         zone_record = QueryCMDB(sql_zone_record)
 
         # if we found an entry for the select
