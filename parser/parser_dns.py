@@ -654,13 +654,13 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
   # variables
   valid_record_list = []
   include_list = []
-  ttl = ''
+  global_ttl = ''
   records = []
 
   # Spread the data
   for (key, value) in data[zone].items():
     if key == '$TTL':
-      ttl = value
+      global_ttl = value
     elif key == '$INCLUDE':
       include_list = json.dumps(value)
     elif key == 'RECORDS':
@@ -683,11 +683,11 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
       # get dns_zone_id
       dns_zone_id = zone_data['id']
 
-      if (zone_data['ttl'] != ttl) or (zone_data['include_list'] != include_list):
+      if (zone_data['ttl'] != global_ttl) or (zone_data['include_list'] != include_list):
         sql_zone_update = "UPDATE network_dns_zone SET "
 
-        if ttl:
-          sql_zone_update += "ttl = %s, " % (SqlStringOrNull(ttl))
+        if global_ttl:
+          sql_zone_update += "ttl = %s, " % (SqlStringOrNull(global_ttl))
 
         if include_list:
           sql_zone_update += "include_list = %s, " % (SqlStringOrNull(include_list))
@@ -702,7 +702,7 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
 
     sql_zone_insert = "INSERT INTO network_dns_zone (name, machine_id, ttl, include_list, created) "
     if ttl:
-      sql_zone_insert += "VALUES (%s, %s, %s," % (SqlStringOrNull(zone), SqlStringOrNull(machine_id),SqlStringOrNull(ttl))
+      sql_zone_insert += "VALUES (%s, %s, %s," % (SqlStringOrNull(zone), SqlStringOrNull(machine_id),SqlStringOrNull(global_ttl))
     else:
       sql_zone_insert += "VALUES (%s, %s, NULL," %  (SqlStringOrNull(zone), SqlStringOrNull(machine_id))
     if include_list:
@@ -778,7 +778,11 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
  
       # if not a SOA record, insert it in the regular record table
       else:
-
+      
+        # Put ttl = NULL if current ttl = global_ttl
+        if global_ttl == record[name]['ttl']:
+          record[name]['ttl'] = None
+          
         # instanciate variables
         zone_record = ''
 
