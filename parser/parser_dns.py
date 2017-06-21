@@ -43,10 +43,10 @@ def ProcessFile(filepath,machine_name):
   """ Processes the file and formats the data a first time
 
   Args:
-    filepath
-    machine_name
+    filepath      (string)
+    machine_name  (string)
 
-  Returns: formatted data
+  Returns: formatted data (list of lines)
   """
 
   # first let's make sure it's a legit DNS configuration file
@@ -204,7 +204,9 @@ def ProcessData(machine_name,zone,results):
   """Populates the raw table
 
   Args:
-    
+    machine name  (String)
+    zone name     (String)
+    results       (list of lines)
 
   Returns: None
   """
@@ -447,10 +449,10 @@ def ProcessLine(line,last_origin,last_class,global_ttl):
   """ Process line
 
   Args:
-    line
-    last_origin
-    last_class
-    global_ttl
+    line        (String)
+    last_origin (String)
+    last_class  (String)
+    global_ttl  (String)
     
 
   Returns: Dictionary or None
@@ -610,7 +612,7 @@ def CheckHostname(fqdn):
   """ Takes an fqdn and returns its id or null
 
   Args:
-    hostname
+    fqdn (String)
 
   Returns: machine id or null
   """
@@ -644,9 +646,9 @@ def ImportRawDNSConfiguration(machine_id,zone,data):
   """ Imports the RAW data
 
   Args:
-    machine_id
-    zone
-    data
+    machine_id  (int)
+    zone name   (int)
+    data        (json)
 
   Returns: None
   """
@@ -832,11 +834,11 @@ def HandleOriginID(zone_id,origin):
   """ Provide the zone id and the origin name and returns the origin id
 
   Args:
-    zone id
-    origin name
+    zone id     (int)
+    origin name (String)
     
 
-  Returns: origin ID
+  Returns: origin ID (int)
   """
 
   # check if the entry already exists
@@ -860,9 +862,9 @@ def ClearTable(valid_id_list,sql_cleanup,table):
   """ Clear a specified table in CMDB based on an id list
 
   Args:
-    valid_id_list
-    sql_cleanup
-    table
+    valid_id_list   (List)
+    query cleanup   (String)
+    table name      (String)
 
   Returns: None
   """
