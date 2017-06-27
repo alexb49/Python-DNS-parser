@@ -408,15 +408,15 @@ def Main(args=None):
 
   # if we have an host provided
   if host:
-    sql_zone_list  += " AND m.hostname = %s" % SanitizeSQL(host)
+    sql_zone_list  += " AND m.hostname = %s" % SqlStringOrNull(host)
 
   # if we have an env
   if environment:
-    sql_zone_list  += " AND e.name = %s" % SanitizeSQL(environment)
+    sql_zone_list  += " AND e.name = %s" % SqlStringOrNull(environment)
 
   # if we have a location
   if location:
-    sql_zone_list  += " AND l.name = %s" % SanitizeSQL(location)
+    sql_zone_list  += " AND l.name = %s" % SqlStringOrNull(location)
 
   # execute the query
   zone_list = QueryCMDB(sql_zone_list)
